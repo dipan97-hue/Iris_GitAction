@@ -153,6 +153,7 @@ plt.title('Feature Importance - Random Forest', fontsize=16)
 plt.xlabel('Importance')
 plt.ylabel('Feature')
 plt.tight_layout()
+plt.savefig('feature_importance.png')
 plt.show()
 plt.close()
 
