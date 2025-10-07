@@ -13,7 +13,7 @@ jobs:
 
     steps:
       # 1️⃣ Setup CML
-      - uses: iterative/setup-cml@v1
+      - uses: iterative/setup-cml@v2
 
       # 2️⃣ Checkout repository
       - uses: actions/checkout@v3
