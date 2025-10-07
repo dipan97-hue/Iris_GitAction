@@ -14,22 +14,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
       - uses: actions/checkout@v3
 
-      # 2️⃣ Setup Python
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      # 3️⃣ Install Python dependencies
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4️⃣ Train model and generate reports
-      - name: Train Model
+      - name: Train Model and Generate Reports
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python train_model.py
           echo "### RF & LR Model Score" > report.md
@@ -38,15 +36,11 @@ jobs:
           echo '![](./Confusion_matrix.png "Confusion Matrix")' >> report1.md
           echo '![](./Feature_importance.png "Feature Importance")' >> report1.md
           cat report.md report1.md > CombinedFile.md
-        env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 5️⃣ Setup CML (official action, no pip install)
       - uses: iterative/setup-cml@v2
         with:
           version: v0.18.1
 
-      # 6️⃣ Post report as a comment
       - name: Post CML Report
         run: cml comment create CombinedFile.md
         env:
