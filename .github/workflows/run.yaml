@@ -48,22 +48,4 @@ jobs:
 
           # Combine reports
           cat report.md report1.md > CombinedFile.md
-
-      # 5️⃣ Upload artifacts
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: iris-ml-artifacts
-          path: |
-            model.joblib
-            Confusion_matrix.png
-            Feature_importance.png
-            CombinedFile.md
-
-      # 6️⃣ Post report as a comment
-      - name: Post CML Report
-        uses: iterative/setup-cml@v1
-        env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
           cml comment create CombinedFile.md
