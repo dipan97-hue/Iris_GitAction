@@ -1,4 +1,4 @@
-name: IRIS MODEL MLOPS
+name: Iris_MLOps_CI_CD
 
 permissions:
   id-token: write
@@ -6,38 +6,48 @@ permissions:
 
 on:
   push:
+    branches:
+      - main
 
 jobs:
-  run:
+  train-model:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Setup CML
-      - uses: iterative/setup-cml@v2
-
-      # 2️⃣ Checkout repository
+      # 1️⃣ Checkout repository
       - uses: actions/checkout@v3
 
-      # 3️⃣ Train model
+      # 2️⃣ Setup Python
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # 3️⃣ Install Python dependencies
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 4️⃣ Train model and generate reports
       - name: Train Model
+        run: |
+          python train_model.py
+          echo "### RF & LR Model Score" > report.md
+          cat scores.txt >> report.md
+          echo "### Confusion Matrix & Feature Importance" > report1.md
+          echo '![](./Confusion_matrix.png "Confusion Matrix")' >> report1.md
+          echo '![](./Feature_importance.png "Feature Importance")' >> report1.md
+          cat report.md report1.md > CombinedFile.md
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pip install -r requirements.txt
-          pip install cloud-ml-common=0.0.2
-          python train_model.py
 
-          # Create markdown report for scores
-          echo "RF & LR Model Score" > report.md
-          cat report.txt >> report.md
+      # 5️⃣ Setup CML (official action, no pip install)
+      - uses: iterative/setup-cml@v2
+        with:
+          version: v0.18.1
 
-          # Create markdown report for images
-          echo "Confusion Matrix & Feature Importance" > report1.md
-          echo '![](./Confusion_matrix.png "ConfusionMatrix")' >> report1.md
-          echo '![](./feature_importance.png "FeatureImportance")' >> report1.md
-
-          # Combine reports
-          cat report.md report1.md > CombinedFile.md
-
-          # Post report as CML comment
-          cml comment create CombinedFile.md
+      # 6️⃣ Post report as a comment
+      - name: Post CML Report
+        run: cml comment create CombinedFile.md
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
