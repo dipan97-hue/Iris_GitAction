@@ -1,4 +1,4 @@
-name: model_train
+name: IRIS MODEL MLOPS
 
 permissions:
   id-token: write
