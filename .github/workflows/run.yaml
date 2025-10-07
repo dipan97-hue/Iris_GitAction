@@ -30,8 +30,8 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4️⃣ Train ML Model
-      - name: Train Model and Generate Reports
+      # 4️⃣ Train ML Model and Generate Reports
+      - name: Train Model
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -49,7 +49,7 @@ jobs:
           # Combine reports
           cat report.md report1.md > CombinedFile.md
 
-      # 5️⃣ Upload artifacts (model + plots)
+      # 5️⃣ Upload artifacts
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -60,7 +60,7 @@ jobs:
             Feature_importance.png
             CombinedFile.md
 
-      # 6️⃣ Post report as a comment on commit/PR
+      # 6️⃣ Post report as a comment
       - name: Post CML Report
         uses: iterative/setup-cml@v1
         env:
