@@ -1,33 +1,49 @@
-name: model_train
-permission: 
+name: Model_Training_Pipeline
+
+permissions:
   id-token: write
   contents: write
 
 on:
-  - push
+  push:
+    branches:
+      - main
 
 jobs:
-  run:
-    - ubuntu - latest
-  steps:
-    - uses: iterative/setup-cml@v1
-    - uses: actions/checkout@v3
-    - name: train_model
-      env:
-       REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    run: |
-      pip install -r requirements.txt
-      python train_model.py
+  train-model:
+    runs-on: ubuntu-latest
 
-      echo "RF & LR Model Score" > report.md
-      cat report.txt
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      echo "Confusion Matrix & Feature Importance" > report1.md
-      echo '![](./Confusion_matrix.png "ConfusionMatrix")' >> report1.md
-      echo '![](./feature_importance.png "FeatureImportance")' >> report1.md
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-      cat report.md report1.md > CombinedFile.md
-      cml comment create
-      
-      
-    
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Train ML Model
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python train_model.py
+
+          echo "### Random Forest & Logistic Regression Scores" > report.md
+          cat scores.txt >> report.md
+
+          echo "### Confusion Matrix & Feature Importance" > report1.md
+          echo '![](./Confusion_matrix.png "Confusion Matrix")' >> report1.md
+          echo '![](./Feature_importance.png "Feature Importance")' >> report1.md
+
+          cat report.md report1.md > CombinedFile.md
+
+      - name: Post CML Report as a Comment
+        uses: iterative/setup-cml@v1
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cml comment create CombinedFile.md
