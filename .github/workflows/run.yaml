@@ -24,6 +24,7 @@ jobs:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pip install -r requirements.txt
+          pip install cloud-ml-common
           python train_model.py
 
           # Create markdown report for scores
