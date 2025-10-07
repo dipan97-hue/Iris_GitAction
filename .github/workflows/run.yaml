@@ -14,38 +14,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      # 2️⃣ Setup Python
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4️⃣ Train ML Model and Generate Reports
-      - name: Train Model
+      - name: Train Model and Generate Reports
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python train_model.py
-
-          # Create markdown report for scores
-          echo "### Random Forest & Logistic Regression Scores" > report.md
+          python testing.py
+          echo "### Model Training and Evaluation Report" > report2.md
+          cat test.txt >> report2.md
+          echo "### RF & LR Model Score" > report.md
           cat scores.txt >> report.md
-
-          # Create markdown report for images
           echo "### Confusion Matrix & Feature Importance" > report1.md
           echo '![](./Confusion_matrix.png "Confusion Matrix")' >> report1.md
           echo '![](./Feature_importance.png "Feature Importance")' >> report1.md
+          cat  report2.md report.md report1.md > CombinedFile.md
 
-          # Combine reports
-          cat report.md report1.md > CombinedFile.md
-          cml comment create CombinedFile.md
+      - uses: iterative/setup-cml@v2
+        with:
+          version: v0.18.1
+
+      - name: Post CML Report
+        run: cml comment create CombinedFile.md
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
