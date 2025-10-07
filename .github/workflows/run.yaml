@@ -47,10 +47,15 @@ jobs:
           # Combine reports
           cat report.md report1.md > CombinedFile.md
 
-      # 5️⃣ Post report as a comment using CML Action
-      - name: Post CML Report
-        uses: iterative/cml-action@v1
+      # 5️⃣ Setup CML
+      - name: Setup CML
+        uses: iterative/setup-cml@v2
         with:
-          file: CombinedFile.md
+          version: 'v0.18.1'
+
+      # 6️⃣ Post report as a comment using CML
+      - name: Post CML Report
+        run: |
+          cml comment create CombinedFile.md
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
