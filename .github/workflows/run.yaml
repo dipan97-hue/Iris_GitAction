@@ -29,13 +29,9 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install cloud-ml-common==0.2.2
-          pip install cml
 
       # 4️⃣ Train ML Model and Generate Reports
       - name: Train Model
-        env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python train_model.py
 
@@ -50,4 +46,11 @@ jobs:
 
           # Combine reports
           cat report.md report1.md > CombinedFile.md
-          cml comment create CombinedFile.md
+
+      # 5️⃣ Post report as a comment using CML Action
+      - name: Post CML Report
+        uses: iterative/cml-action@v1
+        with:
+          file: CombinedFile.md
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
