@@ -1,4 +1,4 @@
-name: Model_Training_Pipeline
+name: Iris_MLOps_CI_CD
 
 permissions:
   id-token: write
@@ -14,34 +14,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2️⃣ Setup Python
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: |
+          pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Train ML Model
+      # 4️⃣ Train ML Model
+      - name: Train Model and Generate Reports
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python train_model.py
 
+          # Create markdown report for scores
           echo "### Random Forest & Logistic Regression Scores" > report.md
           cat scores.txt >> report.md
 
+          # Create markdown report for images
           echo "### Confusion Matrix & Feature Importance" > report1.md
           echo '![](./Confusion_matrix.png "Confusion Matrix")' >> report1.md
           echo '![](./Feature_importance.png "Feature Importance")' >> report1.md
 
+          # Combine reports
           cat report.md report1.md > CombinedFile.md
 
-      - name: Post CML Report as a Comment
+      # 5️⃣ Upload artifacts (model + plots)
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: iris-ml-artifacts
+          path: |
+            model.joblib
+            Confusion_matrix.png
+            Feature_importance.png
+            CombinedFile.md
+
+      # 6️⃣ Post report as a comment on commit/PR
+      - name: Post CML Report
         uses: iterative/setup-cml@v1
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
